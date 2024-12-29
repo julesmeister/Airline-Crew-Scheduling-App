@@ -1,0 +1,73 @@
+<template>
+    <div class="scheduler-container">
+        <!-- Header Section -->
+        <div class="header">
+            <h2>Crew Scheduler</h2>
+            <lightning-button-group>
+                <lightning-button label="Previous" onclick={handlePrevious}></lightning-button>
+                <lightning-button label="Next" onclick={handleNext}></lightning-button>
+            </lightning-button-group>
+            <div class="date-display">{currentDateDisplay}</div>
+        </div>
+
+        <!-- Main Grid Container -->
+        <div class="grid-container">
+            <!-- Available Crew Members Panel -->
+            <div class="crew-panel">
+                <h3>Available Crew Members</h3>
+                <template for:each={availableCrew} for:item="crew">
+                    <div key={crew.Id} 
+                         class="crew-item" 
+                         draggable="true"
+                         data-id={crew.Id}
+                         data-role={crew.Role__c}
+                         ondragstart={handleDragStart}>
+                        <div class="crew-info">
+                            <p class="crew-name">{crew.Name}</p>
+                            <p class="crew-role">{crew.Role__c}</p>
+                            <p class="crew-base">Base: {crew.Base_Location__c}</p>
+                            <p class="crew-status">Status: {crew.Availability_Status__c}</p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Flight Schedule Grid -->
+            <div class="schedule-grid">
+                <!-- Time slots header -->
+                <div class="time-slots-header">
+                    <template for:each={timeSlots} for:item="slot">
+                        <div key={slot} class="time-slot-header">{slot}</div>
+                    </template>
+                </div>
+
+                <!-- Flights Grid -->
+                <div class="flights-container">
+                    <template for:each={flights} for:item="flight">
+                        <div key={flight.Id} class="flight-row">
+                            <div class="flight-info">
+                                <p class="flight-number">{flight.Flight__c}</p>
+                                <p class="flight-route">
+                                    {flight.Departure_Location__c} → {flight.Arrival_Location__c}
+                                </p>
+                                <p class="flight-time">
+                                    {flight.Departure_Time__c} - {flight.Arrival_Time__c}
+                                </p>
+                            </div>
+                            <div class="crew-slots"
+                                 data-flight-id={flight.Id}
+                                 ondragover={handleDragOver}
+                                 ondrop={handleDrop}>
+                                <template for:each={flight.CrewAssignments} for:item="assignment">
+                                    <div key={assignment.Id} class="crew-assignment">
+                                        {assignment.Crew__r.Name} ({assignment.Role__c})
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
