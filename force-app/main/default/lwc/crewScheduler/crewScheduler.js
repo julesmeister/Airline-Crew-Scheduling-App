@@ -103,7 +103,12 @@ export default class CrewScheduler extends LightningElement {
 
     // Format current date for display
     get currentDateDisplay() {
-        return this.currentDate.toLocaleDateString();
+        return this.currentDate.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
     }
 
     // Drag and Drop Handlers

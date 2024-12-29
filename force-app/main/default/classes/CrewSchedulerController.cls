@@ -19,23 +19,30 @@ public with sharing class CrewSchedulerController {
     @AuraEnabled
     public static void createCrewAssignment(Id crewId, String flightNumber, String role, 
                                             DateTime departureTime, DateTime arrivalTime,
-                                            String departureLocation, String arrivalLocation) {
+                                            Decimal departureLatitude, Decimal departureLongitude, 
+                                            Decimal arrivalLatitude, Decimal arrivalLongitude) {
         Crew_Assignment__c assignment = new Crew_Assignment__c(
             Crew__c = crewId,
             Flight__c = flightNumber,
             Role__c = role,
             Departure__c = departureTime,
-            Arrival__c = arrivalTime,
-            Departure_Location__c = departureLocation,
-            Arrival_Location__c = arrivalLocation
+            Arrival__c = arrivalTime
         );
+
+        // Set the geolocation values separately
+        assignment.Departure_Location__Latitude__s = departureLatitude.setScale(2, RoundingMode.HALF_UP);
+        assignment.Departure_Location__Longitude__s = departureLongitude.setScale(2, RoundingMode.HALF_UP);
+        assignment.Arrival_Location__Latitude__s = arrivalLatitude.setScale(2, RoundingMode.HALF_UP);
+        assignment.Arrival_Location__Longitude__s = arrivalLongitude.setScale(2, RoundingMode.HALF_UP);
+
         insert assignment;
     }
 
     @AuraEnabled
     public static void assignCrewToFlight(Id crewId, String flightNumber, String role, 
                                             DateTime departureTime, DateTime arrivalTime,
-                                            String departureLocation, String arrivalLocation) {
-        createCrewAssignment(crewId, flightNumber, role, departureTime, arrivalTime, departureLocation, arrivalLocation);
+                                            Decimal departureLatitude, Decimal departureLongitude, 
+                                            Decimal arrivalLatitude, Decimal arrivalLongitude) {
+        createCrewAssignment(crewId, flightNumber, role, departureTime, arrivalTime, departureLatitude, departureLongitude, arrivalLatitude, arrivalLongitude);
     }
 }
