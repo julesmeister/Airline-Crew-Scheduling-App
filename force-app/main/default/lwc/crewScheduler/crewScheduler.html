@@ -5,6 +5,8 @@
             <lightning-card title="Crew Scheduler"></lightning-card>
             <lightning-button-group>
                 <lightning-button label="Previous" onclick={handlePrevious}></lightning-button>
+                <lightning-button label="Create Crew Assignment"
+                    onclick={handleCreateCrewAssignment}></lightning-button>
                 <lightning-button label="Next" onclick={handleNext}></lightning-button>
             </lightning-button-group>
             <div class="date-display">{currentDateDisplay}</div>
@@ -14,19 +16,29 @@
         <div class="grid-container">
             <!-- Available Crew Members Panel -->
             <div class="crew-panel">
-                <h3>Available Crew Members</h3>
+                <!-- <div class="info-card">
+                    <div class="info-header">
+                        <lightning-icon icon-name="utility:info" alternative-text="Info" size="x-small" class="slds-icon-text-blue"></lightning-icon>
+                        <h3>Crew Members</h3>
+                    </div>
+                </div> -->
+                <lightning-button variant="base" label="New Crew" onclick={handleCreateCrew}
+                    class="slds-m-bottom_small"></lightning-button>
                 <template for:each={availableCrew} for:item="crew">
-                    <div key={crew.Id} 
-                         class="crew-item" 
-                         draggable="true"
-                         data-id={crew.Id}
-                         data-role={crew.Role__c}
-                         ondragstart={handleDragStart}>
+                    <div key={crew.Id} class="crew-item" draggable="true" data-id={crew.Id} data-role={crew.Role__c}
+                        ondragstart={handleDragStart}>
                         <div class="crew-info">
-                            <p class="crew-name">{crew.Name}</p>
+                            <p class="crew-name">{crew.Name__c}</p>
                             <p class="crew-role">{crew.Role__c}</p>
-                            <p class="crew-base">Base: {crew.Base_Location__c}</p>
-                            <p class="crew-status">Status: {crew.Availability_Status__c}</p>
+                            <p class="crew-base">Based In: {crew.Base_Location__c}</p>
+                            <p class="crew-status">Status:&nbsp;&nbsp;
+                                <template if:true={crew.Availability_Status__c}>
+                                    <span class="available">Available</span>
+                                </template>
+                                <template if:false={crew.Availability_Status__c}>
+                                    <span class="unavailable">Unavailable</span>
+                                </template>
+                            </p>
                         </div>
                     </div>
                 </template>
@@ -43,24 +55,37 @@
 
                 <!-- Flights Grid -->
                 <div class="flights-container">
-                    <template for:each={flights} for:item="flight">
+                    <template for:each={assignments} for:item="flight">
+
                         <div key={flight.Id} class="flight-row">
+                            <!-- Space -->
+                            <template for:each={flight.matchedSlotsArray} for:item="count">
+                                <div key={count} class="spacer"></div>
+                            </template>
                             <div class="flight-info">
                                 <p class="flight-number">{flight.Flight__c}</p>
                                 <p class="flight-route">
                                     {flight.Departure_Location__c} → {flight.Arrival_Location__c}
                                 </p>
                                 <p class="flight-time">
-                                    {flight.Departure_Time__c} - {flight.Arrival_Time__c}
+                                    <lightning-formatted-time value={flight.formattedDepartureTime} hour="numeric"
+                                        minute="numeric" hour12="true"></lightning-formatted-time> - &nbsp;
+                                    <lightning-formatted-time value={flight.formattedArrivalTime} hour="numeric"
+                                        minute="numeric" hour12="true"></lightning-formatted-time>
                                 </p>
+                                <lightning-button icon-name="utility:edit" variant="base" label="Edit"
+                                    data-id={flight.Id} onclick={handleEditCrewAssignment}>
+                                </lightning-button>
                             </div>
-                            <div class="crew-slots"
-                                 data-flight-id={flight.Id}
-                                 ondragover={handleDragOver}
-                                 ondrop={handleDrop}>
-                                <template for:each={flight.CrewAssignments} for:item="assignment">
-                                    <div key={assignment.Id} class="crew-assignment">
-                                        {assignment.Crew__r.Name} ({assignment.Role__c})
+                            <div class="crew-slots" data-flight-id={flight.Id} ondragover={handleDragOver}
+                                ondrop={handleDrop}>
+                                <template for:each={timeSlots} for:item="slot">
+                                    <div key={slot} class="time-slot">
+                                        <template for:each={flight.CrewAssignments} for:item="assignment">
+                                            <div key={assignment.Id} class="crew-assignment">
+                                                {assignment.Crew__r.Name} ({assignment.Role__c})
+                                            </div>
+                                        </template>
                                     </div>
                                 </template>
                             </div>

@@ -93,6 +93,7 @@
     padding: 0.5rem;
     background: #f8f8f8;
     border-right: 1px solid #ddd;
+    display: inline-block
 }
 
 .flight-number {
@@ -117,10 +118,43 @@
     font-size: 0.875rem;
 }
 
+.date-display {
+    padding-right: 20px;
+}
+
+/* Status Styles */
+.available {
+    color: green; /* Color for available status */
+}
+
+.unavailable {
+    color: red; /* Color for unavailable status */
+}
+
 /* Drag and Drop Styles */
 .crew-slots.dragover {
     background: #f0f8ff;
     border: 2px dashed #0070d2;
+}
+
+/* Custom Blue Card Info Box Styles */
+.info-card {
+    background-color: #e0f7fa; /* Light blue background */
+    border: 1px solid #00acc1; /* Darker blue border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px; /* Padding inside the box */
+    margin-bottom: 15px; /* Space below the box */
+    display: flex;
+    align-items: center; /* Vertically align children */
+}
+
+.info-header {
+    display: flex;
+    align-items: center; /* Aligns items vertically centered */
+}
+
+.info-header h3 {
+    margin-left: 10px; /* Adds space between the icon and the heading */
 }
 
 /* Responsive Design */
@@ -132,4 +166,9 @@
     .crew-panel {
         height: 200px;
     }
+}
+
+.spacer {
+    width: 100px; /* Width of each time slot */
+    display: inline-block; /* Ensure it behaves like a block element */
 }
