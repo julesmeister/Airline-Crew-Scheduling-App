@@ -83,17 +83,19 @@
 }
 
 .flight-row {
-    display: grid;
-    grid-template-columns: 200px 1fr;
+    display: flex; /* Change to flex for better control */
+    align-items: center; /* Vertically center items */
     border-bottom: 1px solid #ddd;
     min-height: 80px;
 }
 
 .flight-info {
+    flex: 1; /* Allow flight info to take remaining space */
     padding: 0.5rem;
     background: #f8f8f8;
     border-right: 1px solid #ddd;
-    display: inline-block
+    border-left: 1px solid #ddd;
+    /* max-width: 200px; */
 }
 
 .flight-number {
@@ -170,5 +172,7 @@
 
 .spacer {
     width: 100px; /* Width of each time slot */
-    display: inline-block; /* Ensure it behaves like a block element */
+    height: 50px; /* Height of each time slot */
+    flex-shrink: 0; /* Prevent spacers from shrinking */
+    display: block; /* Change to block for grid compatibility */
 }

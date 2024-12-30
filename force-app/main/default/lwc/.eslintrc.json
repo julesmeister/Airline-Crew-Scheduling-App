@@ -9,6 +9,12 @@
       "env": {
         "node": true
       }
+    },
+    {
+      "files": ["*.js", "*.html"],
+      "rules": {
+        "@lwc/lwc/no-inline-styles": "off"
+      }
     }
   ]
 }

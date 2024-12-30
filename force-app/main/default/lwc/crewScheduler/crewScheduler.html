@@ -56,22 +56,24 @@
                 <!-- Flights Grid -->
                 <div class="flights-container">
                     <template for:each={assignments} for:item="flight">
-
                         <div key={flight.Id} class="flight-row">
                             <!-- Space -->
-                            <template for:each={flight.matchedSlotsArray} for:item="count">
+                            <!-- Time slots should be side by side with the flight info -->
+                            <!-- <template for:each={flight.matchedSlotArray} for:item="count">
                                 <div key={count} class="spacer"></div>
-                            </template>
-                            <div class="flight-info">
+                            </template> -->
+                            <!-- Flight info should be side by side with the time slots -->
+                             <!-- eslint-disable-next-line lwc/no-inline-styles -->
+                            <div class="flight-info" style={flight.flightInfoStyle}>
                                 <p class="flight-number">{flight.Flight__c}</p>
                                 <p class="flight-route">
                                     {flight.Departure_Location__c} → {flight.Arrival_Location__c}
                                 </p>
                                 <p class="flight-time">
                                     <lightning-formatted-time value={flight.formattedDepartureTime} hour="numeric"
-                                        minute="numeric" hour12="true"></lightning-formatted-time> - &nbsp;
+                                        minute="numeric"></lightning-formatted-time> - &nbsp;
                                     <lightning-formatted-time value={flight.formattedArrivalTime} hour="numeric"
-                                        minute="numeric" hour12="true"></lightning-formatted-time>
+                                        minute="numeric"></lightning-formatted-time>
                                 </p>
                                 <lightning-button icon-name="utility:edit" variant="base" label="Edit"
                                     data-id={flight.Id} onclick={handleEditCrewAssignment}>

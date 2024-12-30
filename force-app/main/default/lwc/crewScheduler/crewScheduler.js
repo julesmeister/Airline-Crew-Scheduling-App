@@ -55,14 +55,33 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
                     minute: 'numeric',
                     hour12: true
                 });
-                const matchedSlotCount = this.isSlotMatched(formattedDepartureTime);
+                const matchedSlotCount = this.isSlotMatched(formattedDepartureTime) >= 24 ? 0 : this.isSlotMatched(formattedDepartureTime);
                 const matchedSlotArray = this.matchedSlotsArray(matchedSlotCount);
+                // Each hour has 1 slot which is 100px wide
+                // calculate total of formattedDepartureTime and formattedArrivalTime
+                // to get the width of the div
+
+                // departure date
+                const hours = departureDate.getHours();
+                const minutes = departureDate.getMinutes();
+
+                // Calculate total hours from midnight
+                const totalHoursFromMidnight = hours + (minutes / 60); // Convert minutes to a fraction of an hour
+
+                // Calculate total hours
+                const totalHours = (arrivalDate - departureDate) / (1000 * 60 * 60); // Total hours
+                const totalWidth = totalHours * 100; // 100px for every hour
+                const widthStyle = `max-width: ${totalWidth}px;`;
+                const marginLeft = `margin-left: ${totalHoursFromMidnight * 100}px;`;
+                const flightInfoStyle = widthStyle + marginLeft;
+                console.log('widthStyle', widthStyle);
                 return {
                     ...assignment,
                     matchedSlotCount,
                     formattedDepartureTime,
                     formattedArrivalTime,
-                    matchedSlotArray
+                    matchedSlotArray,
+                    flightInfoStyle
                 };
             });
             this.error = undefined;
@@ -198,6 +217,11 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         });
     }
 
+    matchedSlotsArray(count) {
+        // Generate an array with the specified count
+        return Array.from({ length: count }, (_, index) => index);
+    }
+
     isSlotMatched(departureTime) {
         let count = 0;
         let index = 0;
@@ -208,10 +232,11 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
             count++;
             index++;
         }
-        return 0; // Return -1 if no match is found
+        return count; // Return the count even if no match is found
     }
 
-    matchedSlotsArray(count) {
-        return Array.from({ length: count }, (_, index) => index);
+    get flightInfoStyle()  {
+        return 'max-width: 200px;';
     }
+    
 }
