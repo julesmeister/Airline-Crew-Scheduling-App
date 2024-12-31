@@ -1,41 +1,12 @@
-# Step 1: Set Up Your Salesforce Environment
+# Airline Crew Scheduler
 
-## Install Salesforce CLI:
-- Download and install the Salesforce CLI.
-- Verify installation by running `sfdx --version` in your terminal.
+The Airline Crew Scheduler is a custom Lightning Web Component (LWC) designed to facilitate the scheduling of crew members for flights. It allows users to manage crew assignments efficiently, ensuring that all flights are adequately staffed while considering crew availability and roles.
 
-## Set Up Visual Studio Code (VS Code):
-- Install VS Code.
-- Add the Salesforce Extensions Pack from the VS Code marketplace.
+## Overview
 
-## Create a Salesforce Developer Org:
-- Sign up for a free Salesforce Developer Org.
+The Airline Crew Scheduler is a powerful tool for airlines to streamline their crew management process. With this component, airlines can easily schedule crew members for flights, taking into account their availability and roles. The scheduler also allows for the integration of maps to display crew base locations and flight paths.
 
-## Authorize Your Org in VS Code:
-1. Open VS Code and open the terminal.
-2. Run:
-   ```bash
-   sfdx auth:web:login -d -a CrewScheduler
-   ```
-3. Log in to your org and ensure it’s set as the default org.
-
-## Create a New Project in VS Code:
-1. In the terminal, run:
-   ```bash
-   sfdx force:project:create -n CrewSchedulerApp
-   ```
-2. Navigate into the project folder:
-   ```bash
-   cd CrewSchedulerApp
-   ```
-
-## Push to Your Org:
-- After building components, use:
-   ```bash
-   sfdx force:source:push
-   ```
-
-# Step 2: Design Your Data Model
+---
 
 ## Custom Objects:
 
@@ -60,12 +31,9 @@
 | Departure_Location__c  | Departure Location    | Geolocation | Latitude/Longitude of departure airport.                       |
 | Arrival_Location__c   | Arrival Location      | Geolocation | Latitude/Longitude of arrival airport.                         |
 
-
-
 ## Create the Objects:
 - Use Salesforce Setup UI or deploy a `Crew__c` and `Crew_Assignment__c` object via object-meta.xml files in your project.
 
-# Step 3: Develop the LWC
 
 ## Create the LWC:
 1. In the terminal, run:
@@ -94,39 +62,14 @@
 ## Fetch Data with Apex:
 - Write an Apex controller to fetch Crew and Crew_Assignment data.
 
-# Step 4: Automate with Flows
+# Automate with Flows
 
 ## Notification Flow:
 - Create a Flow to send notifications (e.g., email or in-app) to crew members when assigned to a flight.
 - Trigger this Flow on the `Crew_Assignment` object.
 
-# Step 5: Write the Apex Batch Job
 
-## Create the Batch Apex Class:
-- Check for availability conflicts in crew assignments.
-### Example:
-```java
-public class CrewAvailabilityBatch implements Database.Batchable<SObject> {
-    public Database.QueryLocator start(Database.BatchableContext bc) {
-        return Database.getQueryLocator('SELECT Id, Crew__c, Date__c FROM Crew_Assignment__c');
-    }
-
-    public void execute(Database.BatchableContext bc, List<Crew_Assignment__c> scope) {
-        for (Crew_Assignment__c assignment : scope) {
-            // Check for conflicts and update status
-        }
-    }
-
-    public void finish(Database.BatchableContext bc) {
-        // Final actions
-    }
-}
-```
-
-## Schedule the Batch Job:
-- Use a scheduled Apex class to run the batch daily.
-
-# Step 6: Add Maps
+# Add Maps
 
 ## Integrate Maps in the LWC:
 - Use the Google Maps API or the Salesforce Maps Lightning component.
@@ -135,15 +78,3 @@ public class CrewAvailabilityBatch implements Database.Batchable<SObject> {
 ### Example Google Maps Setup:
 - Include the API in your static resources.
 - Use `lightning:map` or `<div>` with Google Maps integration.
-
-# Step 7: Test and Deploy
-
-## Test Locally:
-- Test components in your org by previewing LWCs.
-- Run unit tests for Apex using:
-   ```bash
-   sfdx force:apex:test:run
-   ```
-
-## Deploy to Production:
-- If deploying to a live org, package your components and push them.
