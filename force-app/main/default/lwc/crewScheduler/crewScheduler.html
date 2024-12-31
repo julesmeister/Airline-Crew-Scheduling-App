@@ -46,48 +46,51 @@
 
             <!-- Flight Schedule Grid -->
             <div class="schedule-grid">
+                <!-- scrollbar  -->
                 <!-- Time slots header -->
-                <div class="time-slots-header">
-                    <template for:each={timeSlots} for:item="slot">
-                        <div key={slot} class="time-slot-header">{slot}</div>
-                    </template>
-                </div>
+                <div class="time-slots-container">
+                    <div class="time-slots-header">
+                        <template for:each={timeSlots} for:item="slot">
+                            <div key={slot} class="time-slot-header">{slot}</div>
+                        </template>
+                    </div>
 
-                <!-- Flights Grid -->
-                <div class="flights-container">
-                    <template for:each={assignments} for:item="flight">
-                        <div key={flight.Id} class="flight-row">
-                            <!-- eslint-disable-next-line lwc/no-inline-styles -->
-                            <div class="flight-info" style={flight.flightInfoStyle}>
-                                <p class="flight-number">{flight.Flight__c}</p>
-                                <p class="flight-route">
-                                    {flight.Departure_Location__c} → {flight.Arrival_Location__c}
-                                </p>
-                                <p class="flight-time">
-                                    <lightning-formatted-time value={flight.formattedDepartureTime} hour="numeric"
-                                        minute="numeric"></lightning-formatted-time> - &nbsp;
-                                    <lightning-formatted-time value={flight.formattedArrivalTime} hour="numeric"
-                                        minute="numeric"></lightning-formatted-time>
-                                </p>
-                                <lightning-button icon-name="utility:edit" variant="base" label="Edit"
-                                    data-id={flight.Id} onclick={handleEditCrewAssignment}>
-                                </lightning-button>
-                                <div class="crew-slots" data-flight-id={flight.Id} ondragover={handleDragOver}
-                                    ondrop={handleDrop}>
-                                    <div class="crew-assignment">
-                                        <template if:true={flight.crew}>
-                                            <lightning-card title={flight.crew.Name__c}>
-                                                <p class="slds-p-horizontal_small">{flight.crew.Role__c}</p>
-                                            </lightning-card>
-                                        </template>
-                                        <template if:false={flight.crew}>
-                                           <span class="available">No Crew Assigned</span>
-                                        </template>
+                    <!-- Flights Grid -->
+                    <div class="flights-container">
+                        <template for:each={assignments} for:item="flight">
+                            <div key={flight.Id} class="flight-row">
+                                <!-- eslint-disable-next-line lwc/no-inline-styles -->
+                                <div class="flight-info" style={flight.flightInfoStyle}>
+                                    <p class="flight-number">{flight.Flight__c}</p>
+                                    <p class="flight-route">
+                                        {flight.Departure_Location__c} → {flight.Arrival_Location__c}
+                                    </p>
+                                    <p class="flight-time">
+                                        <lightning-formatted-time value={flight.formattedDepartureTime} hour="numeric"
+                                            minute="numeric"></lightning-formatted-time> - &nbsp;
+                                        <lightning-formatted-time value={flight.formattedArrivalTime} hour="numeric"
+                                            minute="numeric"></lightning-formatted-time>
+                                    </p>
+                                    <lightning-button icon-name="utility:edit" variant="base" label="Edit"
+                                        data-id={flight.Id} onclick={handleEditCrewAssignment}>
+                                    </lightning-button>
+                                    <div class="crew-slots" data-flight-id={flight.Id} ondragover={handleDragOver}
+                                        ondrop={handleDrop}>
+                                        <div class="crew-assignment">
+                                            <template if:true={flight.crew}>
+                                                <lightning-card title={flight.crew.Name__c}>
+                                                    <p class="slds-p-horizontal_small">{flight.crew.Role__c}</p>
+                                                </lightning-card>
+                                            </template>
+                                            <template if:false={flight.crew}>
+                                               <span class="available">No Crew Assigned</span>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </template>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
