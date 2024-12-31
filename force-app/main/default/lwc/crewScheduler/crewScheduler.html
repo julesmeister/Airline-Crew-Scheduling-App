@@ -2,7 +2,7 @@
     <div class="scheduler-container">
         <!-- Header Section -->
         <div class="header">
-            <lightning-card title="Crew Scheduler"></lightning-card>
+            <lightning-card title="Airline Crew Scheduler"></lightning-card>
             <lightning-button-group>
                 <lightning-button label="Previous" onclick={handlePrevious}></lightning-button>
                 <lightning-button label="Create Crew Assignment"
@@ -57,13 +57,7 @@
                 <div class="flights-container">
                     <template for:each={assignments} for:item="flight">
                         <div key={flight.Id} class="flight-row">
-                            <!-- Space -->
-                            <!-- Time slots should be side by side with the flight info -->
-                            <!-- <template for:each={flight.matchedSlotArray} for:item="count">
-                                <div key={count} class="spacer"></div>
-                            </template> -->
-                            <!-- Flight info should be side by side with the time slots -->
-                             <!-- eslint-disable-next-line lwc/no-inline-styles -->
+                            <!-- eslint-disable-next-line lwc/no-inline-styles -->
                             <div class="flight-info" style={flight.flightInfoStyle}>
                                 <p class="flight-number">{flight.Flight__c}</p>
                                 <p class="flight-route">
@@ -78,18 +72,19 @@
                                 <lightning-button icon-name="utility:edit" variant="base" label="Edit"
                                     data-id={flight.Id} onclick={handleEditCrewAssignment}>
                                 </lightning-button>
-                            </div>
-                            <div class="crew-slots" data-flight-id={flight.Id} ondragover={handleDragOver}
-                                ondrop={handleDrop}>
-                                <template for:each={timeSlots} for:item="slot">
-                                    <div key={slot} class="time-slot">
-                                        <template for:each={flight.CrewAssignments} for:item="assignment">
-                                            <div key={assignment.Id} class="crew-assignment">
-                                                {assignment.Crew__r.Name} ({assignment.Role__c})
-                                            </div>
+                                <div class="crew-slots" data-flight-id={flight.Id} ondragover={handleDragOver}
+                                    ondrop={handleDrop}>
+                                    <div class="crew-assignment">
+                                        <template if:true={flight.crew}>
+                                            <lightning-card title={flight.crew.Name__c}>
+                                                <p class="slds-p-horizontal_small">{flight.crew.Role__c}</p>
+                                            </lightning-card>
+                                        </template>
+                                        <template if:false={flight.crew}>
+                                           <span class="available">No Crew Assigned</span>
                                         </template>
                                     </div>
-                                </template>
+                                </div>
                             </div>
                         </div>
                     </template>
