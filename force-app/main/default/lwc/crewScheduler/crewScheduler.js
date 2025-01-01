@@ -106,10 +106,11 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
                 // Calculate total hours
                 const totalHours = (arrivalDate - departureDate) / (1000 * 60 * 60); // Total hours
                 const totalWidth = totalHours * 100; // 100px for every hour
-                const widthStyle = `max-width: ${totalWidth}px;`;
+                const widthStyle = `min-width: ${totalWidth}px;`;
                 const marginLeft = `margin-left: ${
                     totalHoursFromMidnight * 100
                 }px;`;
+                console.log('Width style:', widthStyle);
                 const flightInfoStyle = widthStyle + marginLeft;
                 const crew = assignment.Crew__r ? this.crews.find(c => c.Id === assignment.Crew__r.Id) : null;
                 return {
@@ -264,14 +265,39 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         });
     }
 
+    /**
+     * Refreshes the data by calling refreshApex() on all
+     * the @wire'd properties. This is done using Promise.all()
+     * to wait for all of the promises to resolve before
+     * continuing.
+     *
+     * If any of the promises reject, the catch block is
+     * called and the error is logged to the console and
+     * passed to the handleError() function to display
+     * an error toast.
+     */
     async refreshData() {
         try {
             await Promise.all([
+                // Call refreshApex() on the @wire'd property
+                // for the assignments data
                 refreshApex(this.wiredAssignmentsResult),
+
+                // Call refreshApex() on the @wire'd property
+                // for the crew data
                 refreshApex(this.wiredCrewResult),
+
+                // Call refreshApex() on the @wire'd property
+                // for the available crew data
                 refreshApex(this.wiredAvailableCrewResult)
             ]);
+
+            // If all of the promises resolve, we're done
+            return;
         } catch (error) {
+            // If any of the promises reject, log the error
+            // to the console and pass it to the handleError()
+            // function to display an error toast.
             console.error('Error refreshing data:', error);
             this.handleError(error);
         }

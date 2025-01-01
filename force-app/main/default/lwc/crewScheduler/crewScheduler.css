@@ -132,7 +132,7 @@
     border: 1px solid var(--lwc-colorBorder);
     border-radius: 0.25rem;
     padding: 0.5rem;
-    min-width: 200px;
+    min-width: fit-content;
     z-index: 1;
     height: 100%;
     display: flex;
