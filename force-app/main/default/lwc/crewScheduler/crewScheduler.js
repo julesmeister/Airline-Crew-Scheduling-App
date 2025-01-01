@@ -16,8 +16,8 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
     timeSlots = [];
     error;
     flight;
-
-    // Wire adapter references for refresh
+    
+    // Properties to store wire adapter results
     wiredAvailableCrewResult;
     wiredCrewResult;
     wiredAssignmentsResult;
@@ -26,9 +26,9 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
     @wire(getAvailableCrew)
     wiredAvailableCrew(result) {
         this.wiredAvailableCrewResult = result;
-        const { error, data } = result;
+        const { data, error } = result;
         if (data) {
-            this.availableCrew = [...data];
+            this.availableCrew = [...data];  // Create a new array reference
             this.error = undefined;
         } else if (error) {
             this.error = error;
@@ -38,13 +38,13 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         }
     }
 
-    // Wire all crews data
+    // Wire the crew data
     @wire(getCrews)
     wiredCrew(result) {
         this.wiredCrewResult = result;
-        const { error, data } = result;
+        const { data, error } = result;
         if (data) {
-            this.crews = [...data];
+            this.crews = [...data];  // Create a new array reference
             this.error = undefined;
         } else if (error) {
             this.error = error;
@@ -54,15 +54,30 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         }
     }
 
+    // Show info toast message
+    handleInfo(message) {
+        this.dispatchEvent(new ShowToastEvent({title: 'Info', message: message, variant: 'info'}));
+    }
+
+    // Show success toast message
+    handleSuccess(message) {
+        this.dispatchEvent(new ShowToastEvent({title: 'Success', message: message, variant: 'success'}));
+    }
+
+    // Show error toast message
+    handleError(error) {
+        this.dispatchEvent(new ShowToastEvent({title: 'Error', message: error.message, variant: 'error'}));
+    }
+
     // Wire the assignments data
     @wire(getAssignments, {dateTimeVar: '$currentDate'})
     wiredAssignments(result) {
         this.wiredAssignmentsResult = result;
+        const { data, error } = result;
         this.generateTimeSlots();
 
-        const { error, data } = result;
         if (data) {
-            this.assignments = data.map(assignment => {
+            this.assignments = [...data].map(assignment => {
                 const departureDate = new Date(assignment.Departure__c);
                 const arrivalDate = new Date(assignment.Arrival__c);
                 const formattedDepartureTime = departureDate.toLocaleString('en-US', {
@@ -115,21 +130,6 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         }
     }
 
-    // Show info toast message
-    handleInfo(message) {
-        this.dispatchEvent(new ShowToastEvent({title: 'Info', message: message, variant: 'info'}));
-    }
-
-    // Show success toast message
-    handleSuccess(message) {
-        this.dispatchEvent(new ShowToastEvent({title: 'Success', message: message, variant: 'success'}));
-    }
-
-    // Show error toast message
-    handleError(error) {
-        this.dispatchEvent(new ShowToastEvent({title: 'Error', message: error.message, variant: 'error'}));
-    }
-
     // Generate time slots for the schedule grid
     generateTimeSlots() {
         const slots = [];
@@ -158,8 +158,7 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         let response;
         try {
             response = await assignCrewToFlight({crewId: crewId, crewAssignmentId: event.target.dataset.id});
-            await refreshApex(this.wiredAssignments);
-            await refreshApex(this.wiredCrew);
+            this.refreshData();
             // Update the crew member's availability status
             this.handleSuccess('Crew member assigned successfully');
         } catch (error) {
@@ -214,12 +213,7 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         // Call the remove function
         removeCrewFromFlight({ crewId: crewId, crewAssignmentId: crewAssignmentId })
             .then(() => {
-                // Resets the flight assignments
-                refreshApex(this.wiredAssignments);
-                // Resets the available crew on the left side
-                refreshApex(this.wiredAvailableCrew);
-                // Resets the available crew that exists inside flight assignments
-                refreshApex(this.wiredCrew);
+                this.refreshData();
                 this.handleSuccess('Crew member removed successfully');
             })
             .catch((error) => {
@@ -268,5 +262,18 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
                 actionName: 'new'
             }
         });
+    }
+
+    async refreshData() {
+        try {
+            await Promise.all([
+                refreshApex(this.wiredAssignmentsResult),
+                refreshApex(this.wiredCrewResult),
+                refreshApex(this.wiredAvailableCrewResult)
+            ]);
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+            this.handleError(error);
+        }
     }
 }
