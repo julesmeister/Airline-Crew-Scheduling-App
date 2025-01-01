@@ -1,14 +1,15 @@
 import {LightningElement, wire} from 'lwc';
 import {refreshApex} from '@salesforce/apex';
 import getAvailableCrew from '@salesforce/apex/CrewSchedulerController.getAvailableCrew';
+import getCrews from '@salesforce/apex/CrewSchedulerController.getCrews';
 import getAssignments from '@salesforce/apex/CrewSchedulerController.getAssignments';
 import assignCrewToFlight from '@salesforce/apex/CrewSchedulerController.assignCrewToFlight';
-import createCrewAssignment from '@salesforce/apex/CrewSchedulerController.createCrewAssignment'; // Optional: Import if needed
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
 import {NavigationMixin} from 'lightning/navigation';
 
 export default class CrewScheduler extends NavigationMixin(LightningElement) {
     availableCrew = [];
+    crews = [];
     assignments = [];
     currentDate = new Date();
     timeSlots = [];
@@ -24,13 +25,33 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         } else if (error) {
             this.error = error;
             this.availableCrew = [];
-            this.handleError(error);
+            console.log('Error:', error.body.message);
+            this.handleError(error.body.message);
+        }
+    }
+
+    // Wire the crew data
+    @wire(getCrews)
+    wiredCrew({error, data}) {
+        if (data) {
+            this.crews = data;
+            this.error = undefined;
+        } else if (error) {
+            this.error = error;
+            this.crews = [];
+            console.log('Error:', error.body.message);
+            this.handleError(error.body.message);
         }
     }
 
     // Show info toast message
     handleInfo(message) {
         this.dispatchEvent(new ShowToastEvent({title: 'Info', message: message, variant: 'info'}));
+    }
+
+    // Show success toast message
+    handleSuccess(message) {
+        this.dispatchEvent(new ShowToastEvent({title: 'Success', message: message, variant: 'success'}));
     }
 
     // Show error toast message
@@ -57,7 +78,7 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
                     minute: 'numeric',
                     hour12: true
                 });
-                
+
                 // Each hour has 1 slot which is 100px wide
                 // calculate total of formattedDepartureTime and formattedArrivalTime
                 // to get the width of the div
@@ -67,16 +88,21 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
                 const minutes = departureDate.getMinutes();
 
                 // Calculate total hours from midnight
-                const totalHoursFromMidnight = hours + (minutes / 60); // Convert minutes to a fraction of an hour
+                const totalHoursFromMidnight = hours + (minutes / 60);
+                // Convert minutes to a fraction of an hour
 
                 // Calculate total hours
                 const totalHours = (arrivalDate - departureDate) / (1000 * 60 * 60); // Total hours
                 const totalWidth = totalHours * 100; // 100px for every hour
                 const widthStyle = `max-width: ${totalWidth}px;`;
-                const marginLeft = `margin-left: ${totalHoursFromMidnight * 100}px;`;
+                const marginLeft = `margin-left: ${
+                    totalHoursFromMidnight * 100
+                }px;`;
                 const flightInfoStyle = widthStyle + marginLeft;
-                const crew = assignment.Crew__r ? this.availableCrew.find(c => c.Id === assignment.Crew__r.Id) : null;
-                console.log(crew);
+                console.log('Assignment:', assignment.Crew__r);
+                console.log('Crews:', this.crews);
+                const crew = assignment.Crew__r ? this.crews.find(c => c.Id === assignment.Crew__r.Id) : null;
+                console.log('Crew:', crew);
                 return {
                     ...assignment,
                     formattedDepartureTime,
@@ -86,11 +112,12 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
                 };
             });
             this.error = undefined;
-            
+
         } else if (error) {
             this.error = error;
             this.assignments = [];
-            this.handleError(error);
+            console.log('Error:', error.body.message);
+            this.handleError(error.body.message);
         }
     }
 
@@ -98,8 +125,8 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
     generateTimeSlots() {
         const slots = [];
         for (let i = 0; i < 24; i++) {
-            const hour = i % 12 === 0 ? 12 : i % 12; 
-            const period = i < 12 ? 'AM' : 'PM'; 
+            const hour = i % 12 === 0 ? 12 : i % 12;
+            const period = i < 12 ? 'AM' : 'PM';
             slots.push(`${hour}:00 ${period}`);
         }
         this.timeSlots = slots;
@@ -108,7 +135,10 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
     // Handle crew assignment
     async handleDrop(event) {
         event.preventDefault();
-        const crewData = JSON.parse(event.dataTransfer.getData('text/plain'));
+        const crewId = JSON.parse(event.dataTransfer.getData('text/plain')).crewId;
+        console.log('Crew ID:', crewId);
+        console.log('Drop target:', event.target.dataset.id);
+        // returns null
         const timeSlot = event.target.dataset.timeSlot;
 
         // Calculate departure and arrival times based on the time slot
@@ -116,33 +146,17 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         departureTime.setHours(parseInt(timeSlot), 0, 0, 0);
         const arrivalTime = new Date(departureTime);
         arrivalTime.setHours(departureTime.getHours() + 2); // Default 2-hour flight duration
-
+        let response;
         try {
-            // assignCrewToFlight method usage:
-            // Assigns a crew member to a flight with the given parameters.
-            // Parameters:
-            // - crewId: The ID of the crew member to assign.
-            // - flightNumber: The number of the flight to assign the crew member to.
-            // - role: The role of the crew member in the flight.
-            // - departureTime: The departure time of the flight.
-            // - arrivalTime: The arrival time of the flight.
-            // - departureLocation: The departure location of the flight.
-            // - arrivalLocation: The arrival location of the flight.
-            await assignCrewToFlight({
-                crewId: crewData.crewId,
-                flightNumber: 'FL' + timeSlot, // Generate a flight number
-                role: crewData.role,
-                departureTime: departureTime,
-                arrivalTime: arrivalTime,
-                departureLocation: null, // These would need to be set based on your UI
-                arrivalLocation: null
-            });
-
-            // Refresh the data
+            response = await assignCrewToFlight({crewId: crewId, crewAssignmentId: event.target.dataset.id});
             await refreshApex(this.wiredAssignments);
-            this.showToast('Success', 'Crew member assigned successfully', 'success');
+            await refreshApex(this.wiredCrew);
+            // Update the crew member's availability status
+            this.handleSuccess('Crew member assigned successfully');
         } catch (error) {
-            this.showToast('Error', error.message, 'error');
+            if (response != null) {
+                this.handleError(error);
+            }
         }
     }
 
@@ -169,9 +183,10 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
 
     // Drag and Drop Handlers
     handleDragStart(event) {
-        const crewId = event.target.dataset.id;
-        const crewRole = event.target.dataset.role;
-        event.dataTransfer.setData('text/plain', JSON.stringify({crewId: crewId, role: crewRole}));
+        console.log('Starting drag: ', event.target.dataset.id);
+        // returns: [{"Id":"a04NS000004awPlYAI","Name__c":"Jeremy Louie","Role__c":"Flight Attendant","Base_Location__c":"Zamboanga City","Availability_Status__c":true},{"Id":"a04NS000004b3flYAA","Name__c":"Joseph Lee","Role__c":"Pilot","Base_Location__c":"Cebu City","Availability_Status__c":true}]
+
+        event.dataTransfer.setData('text/plain', JSON.stringify({crewId: event.target.dataset.id}));
     }
 
     handleDragOver(event) {

@@ -76,7 +76,7 @@
                                     </lightning-button>
                                     <div class="crew-slots" data-flight-id={flight.Id} ondragover={handleDragOver}
                                         ondrop={handleDrop}>
-                                        <div class="crew-assignment">
+                                        <div class="crew-assignment" data-id={flight.Id}>
                                             <template if:true={flight.crew}>
                                                 <lightning-card title={flight.crew.Name__c}>
                                                     <p class="slds-p-horizontal_small">{flight.crew.Role__c}</p>

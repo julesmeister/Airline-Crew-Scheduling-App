@@ -121,7 +121,6 @@
     position: relative;
     display: flex;
     align-items: flex-start;
-    margin-bottom: 1rem;
     min-width: fit-content;
     min-height: 80px;
     border-bottom: 1px solid #ddd;
