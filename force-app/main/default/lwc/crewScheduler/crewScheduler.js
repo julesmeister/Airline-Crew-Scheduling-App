@@ -4,6 +4,7 @@ import getAvailableCrew from '@salesforce/apex/CrewSchedulerController.getAvaila
 import getCrews from '@salesforce/apex/CrewSchedulerController.getCrews';
 import getAssignments from '@salesforce/apex/CrewSchedulerController.getAssignments';
 import assignCrewToFlight from '@salesforce/apex/CrewSchedulerController.assignCrewToFlight';
+import removeCrewFromFlight from '@salesforce/apex/CrewSchedulerController.removeCrewFromFlight';
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
 import {NavigationMixin} from 'lightning/navigation';
 
@@ -16,11 +17,18 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
     error;
     flight;
 
+    // Wire adapter references for refresh
+    wiredAvailableCrewResult;
+    wiredCrewResult;
+    wiredAssignmentsResult;
+
     // Wire the crew data
     @wire(getAvailableCrew)
-    wiredCrew({error, data}) {
+    wiredAvailableCrew(result) {
+        this.wiredAvailableCrewResult = result;
+        const { error, data } = result;
         if (data) {
-            this.availableCrew = data;
+            this.availableCrew = [...data];
             this.error = undefined;
         } else if (error) {
             this.error = error;
@@ -30,11 +38,13 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         }
     }
 
-    // Wire the crew data
+    // Wire all crews data
     @wire(getCrews)
-    wiredCrew({error, data}) {
+    wiredCrew(result) {
+        this.wiredCrewResult = result;
+        const { error, data } = result;
         if (data) {
-            this.crews = data;
+            this.crews = [...data];
             this.error = undefined;
         } else if (error) {
             this.error = error;
@@ -44,26 +54,13 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         }
     }
 
-    // Show info toast message
-    handleInfo(message) {
-        this.dispatchEvent(new ShowToastEvent({title: 'Info', message: message, variant: 'info'}));
-    }
-
-    // Show success toast message
-    handleSuccess(message) {
-        this.dispatchEvent(new ShowToastEvent({title: 'Success', message: message, variant: 'success'}));
-    }
-
-    // Show error toast message
-    handleError(error) {
-        this.dispatchEvent(new ShowToastEvent({title: 'Error', message: error.message, variant: 'error'}));
-    }
-
     // Wire the assignments data
     @wire(getAssignments, {dateTimeVar: '$currentDate'})
-    wiredAssignments({error, data}) {
+    wiredAssignments(result) {
+        this.wiredAssignmentsResult = result;
         this.generateTimeSlots();
 
+        const { error, data } = result;
         if (data) {
             this.assignments = data.map(assignment => {
                 const departureDate = new Date(assignment.Departure__c);
@@ -99,10 +96,7 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
                     totalHoursFromMidnight * 100
                 }px;`;
                 const flightInfoStyle = widthStyle + marginLeft;
-                console.log('Assignment:', assignment.Crew__r);
-                console.log('Crews:', this.crews);
                 const crew = assignment.Crew__r ? this.crews.find(c => c.Id === assignment.Crew__r.Id) : null;
-                console.log('Crew:', crew);
                 return {
                     ...assignment,
                     formattedDepartureTime,
@@ -119,6 +113,21 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
             console.log('Error:', error.body.message);
             this.handleError(error.body.message);
         }
+    }
+
+    // Show info toast message
+    handleInfo(message) {
+        this.dispatchEvent(new ShowToastEvent({title: 'Info', message: message, variant: 'info'}));
+    }
+
+    // Show success toast message
+    handleSuccess(message) {
+        this.dispatchEvent(new ShowToastEvent({title: 'Success', message: message, variant: 'success'}));
+    }
+
+    // Show error toast message
+    handleError(error) {
+        this.dispatchEvent(new ShowToastEvent({title: 'Error', message: error.message, variant: 'error'}));
     }
 
     // Generate time slots for the schedule grid
@@ -193,6 +202,32 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         event.preventDefault();
     }
 
+    handleRemoveCrewAssignment(event) {
+        
+        // Log the IDs without JSON.parse
+        const crewId = event.target.dataset.id;
+        const crewAssignmentId = event.target.dataset.flightId;
+    
+        console.log('Crew ID:', crewId);
+        console.log('Flight ID:', crewAssignmentId);
+    
+        // Call the remove function
+        removeCrewFromFlight({ crewId: crewId, crewAssignmentId: crewAssignmentId })
+            .then(() => {
+                // Resets the flight assignments
+                refreshApex(this.wiredAssignments);
+                // Resets the available crew on the left side
+                refreshApex(this.wiredAvailableCrew);
+                // Resets the available crew that exists inside flight assignments
+                refreshApex(this.wiredCrew);
+                this.handleSuccess('Crew member removed successfully');
+            })
+            .catch((error) => {
+                // Handle error
+                this.handleError('Error removing crew from flight:' + error);
+            });
+    }
+
     // Show toast message
     showToast(title, message, variant) {
         this.dispatchEvent(new ShowToastEvent({title: title, message: message, variant: variant}));
@@ -221,6 +256,8 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
             }
         });
     }
+
+    
 
     handleCreateCrew() {
         console.log('Create Crew button clicked');

@@ -64,6 +64,18 @@ public with sharing class CrewSchedulerController {
         }
     }
 
+    @AuraEnabled
+    public static void removeCrewFromFlight(String crewId, String crewAssignmentId) {
+        try {
+            Crew_Assignment__c assignment = [SELECT Id, Crew__c FROM Crew_Assignment__c WHERE Id = :crewAssignmentId LIMIT 1];
+            assignment.Crew__c = null;
+            update assignment;
+            updateCrewAvailability(crewId, true);
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
 
 
    @AuraEnabled

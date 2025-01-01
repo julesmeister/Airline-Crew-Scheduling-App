@@ -79,6 +79,8 @@
                                         <div class="crew-assignment" data-id={flight.Id}>
                                             <template if:true={flight.crew}>
                                                 <lightning-card title={flight.crew.Name__c}>
+                                                    <lightning-button label="X" slot="actions" variant="base"
+                                                        onclick={handleRemoveCrewAssignment} data-id={flight.crew.Id} data-flight-id={flight.Id} ></lightning-button>
                                                     <p class="slds-p-horizontal_small">{flight.crew.Role__c}</p>
                                                 </lightning-card>
                                             </template>
