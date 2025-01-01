@@ -23,23 +23,6 @@ public with sharing class CrewSchedulerController {
        }
    }
 
-    @AuraEnabled
-    public static void updateCrewAvailability(String crewId, Boolean availabilityStatus) {
-        // Check if the crewId is not null
-        if (crewId == null) {
-            throw new AuraHandledException('Crew ID cannot be null.');
-        }
-        
-        // Query the crew member
-        Crew__c crewMember = [SELECT Id, Availability_Status__c FROM Crew__c WHERE Id = :crewId LIMIT 1];
-        
-        // Update the availability status
-        crewMember.Availability_Status__c = availabilityStatus;
-        
-        // Perform the update
-        update crewMember;
-    }
-
     @AuraEnabled(cacheable=true)
     public static List<Crew_Assignment__c> getAssignments(DateTime dateTimeVar) {
         // Check if dateTimeVar is not null
@@ -70,7 +53,6 @@ public with sharing class CrewSchedulerController {
             Crew_Assignment__c assignment = [SELECT Id, Crew__c FROM Crew_Assignment__c WHERE Id = :crewAssignmentId LIMIT 1];
             assignment.Crew__c = null;
             update assignment;
-            updateCrewAvailability(crewId, true);
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -89,7 +71,6 @@ public with sharing class CrewSchedulerController {
    
            // Perform the update
            update assignment;
-           updateCrewAvailability(crewId, false);
        } catch (DmlException e) {
            System.debug('Error assigning crew to flight: ' + e.getMessage());
            throw new AuraHandledException('Error assigning crew to flight: ' + e.getMessage());

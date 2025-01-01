@@ -106,7 +106,7 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
                 // Calculate total hours
                 const totalHours = (arrivalDate - departureDate) / (1000 * 60 * 60); // Total hours
                 const totalWidth = totalHours * 100; // 100px for every hour
-                const widthStyle = `min-width: ${totalWidth}px;`;
+                const widthStyle = `width: ${totalWidth}px;`;
                 const marginLeft = `margin-left: ${
                     totalHoursFromMidnight * 100
                 }px;`;
@@ -228,39 +228,66 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
         this.dispatchEvent(new ShowToastEvent({title: title, message: message, variant: variant}));
     }
 
-    handleCreateCrewAssignment() {
+    async handleCreateCrewAssignment() {
         console.log('Create Crew Assignment button clicked');
-        this[NavigationMixin.Navigate]({
+        const pageRef = {
             type: 'standard__objectPage',
             attributes: {
-                objectApiName: 'Crew_Assignment__c', // Change to your object API name
+                objectApiName: 'Crew_Assignment__c',
                 actionName: 'new'
+            }
+        };
+
+        // Generate the URL for the new record page
+        const url = await this[NavigationMixin.GenerateUrl](pageRef);
+        
+        // Navigate to the URL with a success callback
+        this[NavigationMixin.Navigate](pageRef, {
+            postSuccess: () => {
+                this.refreshData();
             }
         });
     }
 
-
-    handleEditCrewAssignment(event) {
+    async handleEditCrewAssignment(event) {
         console.log('Edit Crew Assignment button clicked');
-        this[NavigationMixin.Navigate]({
+        const pageRef = {
             type: 'standard__objectPage',
             attributes: {
-                objectApiName: 'Crew_Assignment__c', // Change to your object API name
+                objectApiName: 'Crew_Assignment__c',
                 actionName: 'edit',
                 recordId: event.target.dataset.id
             }
+        };
+
+        // Generate the URL for the edit record page
+        const url = await this[NavigationMixin.GenerateUrl](pageRef);
+        
+        // Navigate to the URL with a success callback
+        this[NavigationMixin.Navigate](pageRef, {
+            postSuccess: () => {
+                this.refreshData();
+            }
         });
     }
 
-    
-
-    handleCreateCrew() {
+    async handleCreateCrew() {
         console.log('Create Crew button clicked');
-        this[NavigationMixin.Navigate]({
+        const pageRef = {
             type: 'standard__objectPage',
             attributes: {
-                objectApiName: 'Crew__c', // Change to your object API name
+                objectApiName: 'Crew__c',
                 actionName: 'new'
+            }
+        };
+
+        // Generate the URL for the new record page
+        const url = await this[NavigationMixin.GenerateUrl](pageRef);
+        
+        // Navigate to the URL with a success callback
+        this[NavigationMixin.Navigate](pageRef, {
+            postSuccess: () => {
+                this.refreshData();
             }
         });
     }
