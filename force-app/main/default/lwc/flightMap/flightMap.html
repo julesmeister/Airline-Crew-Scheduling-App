@@ -1,3 +1,10 @@
 <template>
-    
+    <lightning-card title="Flight Map">
+        <lightning-map 
+            map-markers={mapMarkers}
+            zoom-level="10"
+            center-position={centerPosition}
+            style="height: 400px;">
+        </lightning-map>
+    </lightning-card>
 </template>

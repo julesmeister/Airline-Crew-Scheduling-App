@@ -7,6 +7,8 @@ import assignCrewToFlight from '@salesforce/apex/CrewSchedulerController.assignC
 import removeCrewFromFlight from '@salesforce/apex/CrewSchedulerController.removeCrewFromFlight';
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
 import {NavigationMixin} from 'lightning/navigation';
+import { fireEvent, registerListener } from 'c/pubsub';
+import { CurrentPageReference } from 'lightning/navigation';
 
 export default class CrewScheduler extends NavigationMixin(LightningElement) {
     availableCrew = [];
@@ -21,6 +23,12 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
     wiredAvailableCrewResult;
     wiredCrewResult;
     wiredAssignmentsResult;
+
+    @wire(CurrentPageReference) pageRef;
+
+    connectedCallback() {
+        registerListener('showMap', this.handleShowMap, this);
+    }
 
     // Wire the crew data
     @wire(getAvailableCrew)
@@ -328,5 +336,12 @@ export default class CrewScheduler extends NavigationMixin(LightningElement) {
             console.error('Error refreshing data:', error);
             this.handleError(error);
         }
+    }
+
+    handleShowMap(event) {
+        const origin = event.target.dataset.origin;
+        const destination = event.target.dataset.destination;
+        console.log('Firing showMap event with:', origin, destination); // Log the data being sent
+        fireEvent(this.pageRef, 'showMap', [origin, destination]);
     }
 }

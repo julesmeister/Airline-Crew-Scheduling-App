@@ -71,9 +71,14 @@
                                         <lightning-formatted-time value={flight.formattedArrivalTime} hour="numeric"
                                             minute="numeric"></lightning-formatted-time>
                                     </p>
-                                    <lightning-button icon-name="utility:edit" variant="base" label="Edit"
-                                        data-id={flight.Id} onclick={handleEditCrewAssignment}>
-                                    </lightning-button>
+                                    <div class="button-container">
+                                        <lightning-button icon-name="utility:edit" variant="base" label="Edit"
+                                            data-id={flight.Id} onclick={handleEditCrewAssignment}>
+                                        </lightning-button>
+                                        <lightning-button icon-name="standard:address" variant="base" label="Show Map"
+                                            data-origin={flight.Departure_Location__c} data-destination={flight.Arrival_Location__c} onclick={handleShowMap}>
+                                        </lightning-button>
+                                    </div>
                                     <div class="crew-slots" data-flight-id={flight.Id} ondragover={handleDragOver}
                                         ondrop={handleDrop}>
                                         <div class="crew-assignment" data-id={flight.Id}>

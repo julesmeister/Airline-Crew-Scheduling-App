@@ -234,3 +234,8 @@
     flex-shrink: 0;
     display: block;
 }
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+}
